@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { FIRESTORE_DB } from '../../FirebaseConfig';
-import { addDoc, collection } from 'firebase/firestore';
+import { getDoc, doc, setDoc } from 'firebase/firestore';
+import { Alert } from 'react-native';
 
 const AddPatient = () => {
   const [nom, setNom] = useState('');
@@ -9,15 +10,44 @@ const AddPatient = () => {
 
   const ajouterPatient = async () => {
     try {
-      const patientData = {
-        nom,
-        prenom,
-      };
+      // Vérifiez que le prénom et le nom ont été saisis
+      if (!prenom || !nom) {
+        Alert.alert('Erreur', 'Veuillez saisir le prénom et le nom du patient.');
+        return;
+      }
 
-      // Ajout du patient à la collection "Patients" dans Firestore
-      const docRef = await addDoc(collection(FIRESTORE_DB, 'Patient'), patientData);
+      // Supprimez les espaces du prénom et du nom
+      const prenomSansEspaces = prenom.replace(/\s/g, '');
+      const nomSansEspaces = nom.replace(/\s/g, '');
 
-      console.log('Patient ajouté avec l\'ID : ', docRef.id);
+      // Générez l'e-mail à partir du prénom et du nom sans espaces
+      const email = `${prenomSansEspaces.toLowerCase()}${nomSansEspaces.toLowerCase()}@digisport.fr`;
+
+      // Vérifiez si un patient avec le même e-mail existe déjà
+      const existingDoc = await getDoc(doc(FIRESTORE_DB, 'Patient', email));
+
+      if (existingDoc.exists()) {
+        // Un patient avec le même e-mail existe déjà
+        Alert.alert('Erreur', 'Un patient avec le même e-mail existe déjà.');
+      } else {
+        // Utilisez l'e-mail comme ID lors de l'ajout du document
+        const patientData = {
+          nom,
+          prenom,
+        };
+
+        const docRef = doc(FIRESTORE_DB, 'Patient', email);
+        await setDoc(docRef, patientData);
+
+        // Affichage de la boîte de dialogue pour le succès
+        Alert.alert('Succès', 'Patient ajouté avec succès.');
+
+        // Effacer les entrées des champs nom et prénom
+        setNom('');
+        setPrenom('');
+
+        console.log('Patient ajouté avec l\'ID (e-mail) : ', email);
+      }
     } catch (error) {
       console.error('Erreur lors de l\'ajout du patient : ', error);
     }
@@ -25,25 +55,25 @@ const AddPatient = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Nom :</Text>
-      <TextInput
-        style={styles.input}
-        value={nom}
-        onChangeText={(text) => setNom(text)}
-        placeholder="Entrez le nom"
-      />
 
-      <Text style={styles.label}>Prénom :</Text>
-      <TextInput
+    <Text style={styles.label}>Prénom :</Text>
+    <TextInput
         style={styles.input}
         value={prenom}
         onChangeText={(text) => setPrenom(text)}
         placeholder="Entrez le prénom"
-      />
+    />
+    <Text style={styles.label}>Nom :</Text>
+    <TextInput
+        style={styles.input}
+        value={nom}
+        onChangeText={(text) => setNom(text)}
+        placeholder="Entrez le nom"
+    />
 
-      <TouchableOpacity style={styles.button} onPress={ajouterPatient}>
+    <TouchableOpacity style={styles.button} onPress={ajouterPatient}>
         <Text style={styles.buttonText}>Ajouter Patient</Text>
-      </TouchableOpacity>
+    </TouchableOpacity>
     </View>
   );
 };
