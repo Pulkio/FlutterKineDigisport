@@ -7,20 +7,21 @@ import Login from './app/screens/Login';
 import Accueil from './app/screens/Accueil';
 import AddPatient from './app/screens/AddPatient';
 import DeletePatient from './app/screens/DeletePatient';
+import Test from './app/screens/Test';
+
 
 import { FIREBASE_AUTH } from './FirebaseConfig';
 
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
 
-//A mettre dans un fichier separé
 function InsideLayout() {
   return (
     <InsideStack.Navigator>
       <InsideStack.Screen name="Accueil" component={Accueil} />
       <InsideStack.Screen name='AddPatient' component={AddPatient} options={{ title: 'Ajouter un patient' }} />
       <InsideStack.Screen name='DeletePatient' component={DeletePatient} options={{ title: 'Supprimer un patient' }} />
-
+      <InsideStack.Screen name='Test' component={Test} options={{ title: 'Choisir un test' }} />
     </InsideStack.Navigator>
   )
 }

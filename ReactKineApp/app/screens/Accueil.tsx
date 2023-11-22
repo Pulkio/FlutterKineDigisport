@@ -18,6 +18,10 @@ const Accueil = ({ navigation }: RouteProps) => {
     navigation.navigate('DeletePatient');
   };
 
+  const goToTest = () => {
+    navigation.navigate('Test');
+  };
+
   return (
     <View style={styles.container}>
       {/* En-tête personnalisé */}
@@ -34,6 +38,9 @@ const Accueil = ({ navigation }: RouteProps) => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={goToDeletePatient}>
           <Text style={styles.buttonText}>Supprimer un patient</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={goToTest}>
+          <Text style={styles.buttonText}>Choisir un test</Text>
         </TouchableOpacity>
       </View>
     </View>
