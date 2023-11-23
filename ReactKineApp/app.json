@@ -30,6 +30,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": {
+      "expo-image-picker": {
+        "photoPermission": { "read": true, "write": true },
+        "videoPermission": { "read": true, "write": true }
+      }
     }
   }
 }
