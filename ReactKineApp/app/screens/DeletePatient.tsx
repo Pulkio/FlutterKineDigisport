@@ -2,35 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { FIRESTORE_DB } from '../../FirebaseConfig';
 import { getDocs, collection, deleteDoc, doc } from 'firebase/firestore';
+import { getAuth, User } from 'firebase/auth';  // Ajoutez cette importation
 
 interface Patient {
   id: string;
   data: {
     nom: string;
     prenom: string;
-    // Ajoute d'autres champs si nécessaire
+    // Ajoutez d'autres champs si nécessaire
   };
 }
 
 const DeletePatient = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
+  const currentUser = getAuth().currentUser; // Obtenez l'utilisateur actuel
 
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const querySnapshot = await getDocs(collection(FIRESTORE_DB, 'Patient'));
-        const patientsData: Patient[] = [];
-        querySnapshot.forEach((doc) => {
-          patientsData.push({ id: doc.id, data: doc.data() as any }); // L'utilisation de 'as any' peut être nécessaire si les données ne correspondent pas exactement à l'interface
-        });
-        setPatients(patientsData);
+        if (currentUser) {
+          const querySnapshot = await getDocs(collection(FIRESTORE_DB, `users/${currentUser.uid}/patients`));
+          const patientsData: Patient[] = [];
+          querySnapshot.forEach((doc) => {
+            patientsData.push({ id: doc.id, data: doc.data() as any }); // L'utilisation de 'as any' peut être nécessaire si les données ne correspondent pas exactement à l'interface
+          });
+          setPatients(patientsData);
+        }
       } catch (error) {
         console.error('Erreur lors de la récupération des patients : ', error);
       }
     };
 
     fetchPatients();
-  }, []);
+  }, [currentUser]);
 
   const handleDelete = (patientId: string) => {
     Alert.alert(
@@ -46,7 +50,7 @@ const DeletePatient = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteDoc(doc(FIRESTORE_DB, 'Patient', patientId));
+              await deleteDoc(doc(collection(FIRESTORE_DB, `users/${currentUser?.uid}/patients`), patientId));
               Alert.alert('Succès', 'Le patient a été supprimé avec succès.');
               // Mettre à jour la liste des patients après la suppression
               setPatients((prevPatients) => prevPatients.filter((patient) => patient.id !== patientId));

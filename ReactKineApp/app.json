@@ -15,9 +15,14 @@
       "**/*"
     ],
     "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Description de l'utilisation de la caméra",
+        "NSMicrophoneUsageDescription": "Description de l'utilisation du microphone"
+      },
       "supportsTablet": true
     },
     "android": {
+      "permissions": ["CAMERA", "RECORD_AUDIO"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

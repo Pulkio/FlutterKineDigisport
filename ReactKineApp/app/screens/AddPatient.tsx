@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { FIRESTORE_DB } from '../../FirebaseConfig';
-import { getDoc, doc, setDoc } from 'firebase/firestore';
+import { getDoc, doc, setDoc, collection } from 'firebase/firestore';
 import { Alert } from 'react-native';
+import { getAuth, User } from 'firebase/auth';  // Modifiez l'importation ici
 
 const AddPatient = () => {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(getAuth().currentUser); // Utilisez currentUser directement
 
   const ajouterPatient = async () => {
     try {
+      // Vérifiez que l'utilisateur est authentifié
+      if (!currentUser) {
+        Alert.alert('Erreur', 'Veuillez vous connecter pour ajouter un patient.');
+        return;
+      }
+
+      // Utilisez l'ID de l'utilisateur comme nom de la collection
+      const collectionName = `users/${currentUser.uid}/patients`;
+
       // Vérifiez que le prénom et le nom ont été saisis
       if (!prenom || !nom) {
         Alert.alert('Erreur', 'Veuillez saisir le prénom et le nom du patient.');
@@ -23,8 +34,8 @@ const AddPatient = () => {
       // Générez l'e-mail à partir du prénom et du nom sans espaces
       const email = `${prenomSansEspaces.toLowerCase()}${nomSansEspaces.toLowerCase()}@digisport.fr`;
 
-      // Vérifiez si un patient avec le même e-mail existe déjà
-      const existingDoc = await getDoc(doc(FIRESTORE_DB, 'Patient', email));
+      // Vérifiez si un patient avec le même e-mail existe déjà dans la collection de l'utilisateur
+      const existingDoc = await getDoc(doc(collection(FIRESTORE_DB, collectionName), email));
 
       if (existingDoc.exists()) {
         // Un patient avec le même e-mail existe déjà
@@ -36,7 +47,7 @@ const AddPatient = () => {
           prenom,
         };
 
-        const docRef = doc(FIRESTORE_DB, 'Patient', email);
+        const docRef = doc(collection(FIRESTORE_DB, collectionName), email);
         await setDoc(docRef, patientData);
 
         // Affichage de la boîte de dialogue pour le succès
